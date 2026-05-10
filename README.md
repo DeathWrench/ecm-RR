@@ -165,6 +165,7 @@ The current roadmap includes:
 ## Notes
 
 - If `bass.dll` is missing or the wrong version is loaded, audio playback will fail.
+- If `bass.dll` cannot be loaded, ECM-R shows the Windows error text and the exact path it tried in the startup popup.
 - ECM-R ignores its hotkeys during the first startup chyron so the initial banner can complete cleanly before manual controls are used.
 - `bass.dll` must be the official BASS runtime placed next to the ECM-R runtime files.
 - The current runtime integration has been tested with BASS `v2.4.18.11`.
