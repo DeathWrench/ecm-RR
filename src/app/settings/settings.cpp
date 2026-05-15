@@ -14,6 +14,7 @@
 
 namespace
 {
+	// Returns a copy of the input without leading or trailing whitespace.
 	std::string trim_copy(std::string value)
 	{
 		auto first = std::find_if_not(value.begin(), value.end(), [](unsigned char ch) { return std::isspace(ch) != 0; });
@@ -27,6 +28,7 @@ namespace
 		return std::string(first, last);
 	}
 
+	// Normalizes [trax] routing values to the supported ALL, FE, or IG tokens.
 	std::string normalize_trax_value(const char* raw_value)
 	{
 		if (!raw_value)
@@ -54,17 +56,20 @@ namespace
 		return "ALL";
 	}
 
+	// Reads an INI value while providing a stable fallback when the key is missing.
 	const char* safe_ini_get(ini_t* config, const char* section, const char* key, const char* fallback)
 	{
 		const char* value = ini_get(config, section, key);
 		return value ? value : fallback;
 	}
 
+	// Builds the version line persisted inside the [core] section.
 	std::string build_version_line()
 	{
 		return std::string("version = \"") + VERSION + "\"";
 	}
 
+	// Saves a single INI value by loading, mutating, and writing the config file.
 	bool save_ini_value(const char* section, const char* key, const std::string& value)
 	{
 		if (settings::config_file.empty())
@@ -84,26 +89,31 @@ namespace
 		return saved;
 	}
 
+	// Formats one persisted volume line for the generated config text.
 	std::string build_volume_line(const char* key, const int volume)
 	{
 		return std::string(key) + " = \"" + std::to_string(volume) + "\"";
 	}
 
+	// Formats the persisted shuffle toggle line.
     std::string build_shuffle_enabled_line(const bool shuffle_enabled)
 	{
 		return std::string("shuffle_enabled = ") + (shuffle_enabled ? "true" : "false");
 	}
 
+	// Formats the persisted repeat toggle line.
 	std::string build_repeat_enabled_line(const bool repeat_enabled)
 	{
 		return std::string("repeat_enabled = ") + (repeat_enabled ? "true" : "false");
 	}
 
+	// Formats the persisted loading-screen stop toggle line.
   std::string build_stop_music_on_loading_screens_line(const bool stop_music_on_loading_screens)
 	{
 		return std::string("stop_music_on_loading_screens = ") + (stop_music_on_loading_screens ? "true" : "false");
 	}
 
+	// Updates only the stored config version while preserving the rest of the file layout.
 	void update_config_version_only(const std::string& path)
 	{
 		const std::string contents = fs::read(path);
@@ -210,6 +220,7 @@ namespace
 		}
 	}
 
+	// Rebuilds the complete INI text from the current runtime state.
 	std::string build_config_text(const std::string& playlist, const int volume, const int frontend_volume, const int ingame_volume, const bool stop_music_on_loading_screens, const bool shuffle_enabled, const bool repeat_enabled)
 	{
 		std::ostringstream output;

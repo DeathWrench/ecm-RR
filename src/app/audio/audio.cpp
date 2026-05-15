@@ -17,6 +17,7 @@ namespace
 {
     constexpr int max_playback_history_entries = 50;
 
+	// Keeps persisted and context-specific volumes inside ECM-R's 0-100 range.
 	std::int32_t clamp_volume(const std::int32_t volume)
 	{
 		return std::clamp(volume, 0, 100);
@@ -29,6 +30,7 @@ namespace
 		ingame
 	};
 
+	// Maps the current NFSU2 flow state to the playlist context used by ECM-R.
 	playlist_context_t get_playlist_context()
 	{
         global::state = game_state;
@@ -50,6 +52,7 @@ namespace
 		}
 	}
 
+	// Filters a track according to its [trax] routing and the active playlist context.
 	bool is_track_valid_for_context(const std::string& track_context, const playlist_context_t playlist_context)
 	{
 		if (track_context == "ALL" || track_context == "N/A")
@@ -70,6 +73,7 @@ namespace
 		}
 	}
 
+	// Reports whether the game is currently inside one of the loading flows that can stop music.
 	bool is_loading_state()
 	{
 		global::state = game_state;
@@ -79,6 +83,7 @@ namespace
 			global::state == GameFlowState::LoadingTrack;
 	}
 
+	// Resolves the playlist entry index that matches the current song order position.
 	int current_playlist_entry_index()
 	{
 		if (audio::playlist_order.empty() || audio::current_song_index < 0 || audio::current_song_index >= static_cast<int>(audio::playlist_order.size()))
@@ -89,6 +94,7 @@ namespace
 		return audio::playlist_order[audio::current_song_index];
 	}
 
+	// Attempts to show the current track chyron once audio and UI state are both ready.
 	bool try_show_current_chyron()
 	{
 		if (audio::paused || audio::chan[0] == 0 || audio::currently_playing.title.empty() || audio::currently_playing.title == "N/A")
@@ -110,6 +116,7 @@ namespace
 		return true;
 	}
 
+	// Tracks whether the first chyron has fully appeared and disappeared at least once.
 	void update_first_chyron_state()
 	{
 		if (audio::first_chyron_completed)
@@ -128,6 +135,7 @@ namespace
 		}
 	}
 
+	// Applies the combined manual and game-driven pause state to the active stream.
 	void sync_pause_state()
 	{
 		const bool was_paused = audio::paused;
@@ -155,12 +163,14 @@ namespace
 		}
 	}
 
+	// Resets shuffle history so backward navigation starts from a clean slate.
 	void clear_playback_history()
 	{
 		audio::playback_history.clear();
 		audio::playback_history_index = -1;
 	}
 
+	// Records a visited playlist entry so shuffled playback can move backward and forward.
 	void record_playback_history(const int playlist_entry_index)
 	{
 		if (audio::playback_history_index + 1 < static_cast<int>(audio::playback_history.size()))
@@ -181,6 +191,7 @@ namespace
 		audio::playback_history_index = static_cast<int>(audio::playback_history.size()) - 1;
 	}
 
+	// Aligns the current song order position with a concrete playlist entry index.
 	void sync_current_song_index_from_playlist_entry(const int playlist_entry_index)
 	{
 		const auto it = std::find(audio::playlist_order.begin(), audio::playlist_order.end(), playlist_entry_index);
@@ -190,6 +201,7 @@ namespace
 		}
 	}
 
+	// Plays a concrete playlist entry and optionally records it in shuffle history.
 	void play_song_from_playlist_entry(const int playlist_entry_index, const bool record_history)
 	{
 		if (playlist_entry_index < 0 || playlist_entry_index >= static_cast<int>(audio::playlist_files.size()))
@@ -216,6 +228,7 @@ namespace
 		}
 	}
 
+	// Plays a song by its position inside the active playlist order.
     void play_song_from_playlist_order(const int song_index, const bool record_history = true)
 	{
 		if (song_index < 0 || song_index >= static_cast<int>(audio::playlist_order.size()))
@@ -233,6 +246,7 @@ namespace
 		play_song_from_playlist_entry(playlist_entry_index, record_history);
 	}
 
+	// Rebuilds playlist ordering when the active frontend or in-game context changes.
 	bool ensure_playlist_order_for_current_context(const int reset_index)
 	{
 		const auto playlist_context = static_cast<std::int32_t>(get_playlist_context());
@@ -250,6 +264,7 @@ namespace
 		return !audio::playlist_order.empty();
 	}
 
+	// Moves the current song pointer while honoring repeat and end-of-playlist state.
 	void move_current_song_index(const int delta)
 	{
 		const int last_song_index = static_cast<int>(audio::playlist_order.size()) - 1;
@@ -278,6 +293,7 @@ namespace
 		audio::current_song_index = next_song_index;
 	}
 
+	// Restores a previously visited shuffle entry if the requested history position exists.
 	bool try_play_song_from_history(const int history_index)
 	{
 		if (history_index < 0 || history_index >= static_cast<int>(audio::playback_history.size()))
@@ -291,6 +307,7 @@ namespace
 		return true;
 	}
 
+	// Moves relative to the current song, using shuffle history when available.
 	void play_relative_song(const int delta)
 	{
 		const int reset_index = delta > 0 ? -1 : static_cast<int>(audio::playlist_order.size());

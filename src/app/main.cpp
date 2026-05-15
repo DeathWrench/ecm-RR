@@ -14,6 +14,7 @@
 
 game_t game = game_t::NFSU2;
 
+// Applies the earliest game-side mute patch once the engine has finished its system init.
 void sys_init_()
 {
 	global::sys_init = true;
@@ -28,6 +29,7 @@ void sys_init_()
 	}
 }
 
+// Naked trampoline that injects ECM-R's system-init patch and returns to the game.
 __declspec(naked) void sys_init()
 {
 	__asm
@@ -38,6 +40,7 @@ __declspec(naked) void sys_init()
 	}
 }
 
+// Main-loop hook that lets ECM-R update audio state once per game tick.
 void __declspec(naked) NFSU2_MainLoop()
 {
 	static constexpr auto bGetTicker__Fv = 0x0043BDF0;
@@ -56,6 +59,8 @@ void __declspec(naked) NFSU2_MainLoop()
 }
 
 static void(* sub_00537980_)(int a2, char* a3, int a4);
+
+// Pauses or resumes custom music when specific UI packages trigger ECM-R's mute rules.
 void sub_00537980(int a2, char* a3, int a4)
 {
 	bool found = false;
@@ -81,7 +86,7 @@ void sub_00537980(int a2, char* a3, int a4)
 	return sub_00537980_(a2, a3, a4);
 }
 
-//Overlay init
+// Performs low-level runtime setup: patches, settings load, renderer hook selection, and MinHook enable.
 void init()
 {
 	MH_Initialize();
@@ -154,6 +159,7 @@ void init()
 	MH_EnableHook(MH_ALL_HOOKS);
 }
 
+// Writes a crash dump for unexpected failures and reports the dump path to the user.
 LONG WINAPI CustomUnhandledExceptionFilter(LPEXCEPTION_POINTERS ExceptionInfo)
 {
 	// step 1: write minidump
@@ -196,6 +202,7 @@ LONG WINAPI CustomUnhandledExceptionFilter(LPEXCEPTION_POINTERS ExceptionInfo)
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
+// Worker-thread entry point that prepares the debug console and starts ECM-R.
 DWORD WINAPI OnAttachImpl(LPVOID lpParameter)
 {
 	std::ios_base::sync_with_stdio(false);
@@ -241,6 +248,7 @@ DWORD WINAPI OnAttachImpl(LPVOID lpParameter)
 	return 0;
 }
 
+// Crash-guarded wrapper around the worker-thread bootstrap.
 DWORD WINAPI OnAttach(LPVOID lpParameter)
 {
 	__try
@@ -255,6 +263,7 @@ DWORD WINAPI OnAttach(LPVOID lpParameter)
 	return 0;
 }
 
+// DLL entry point that spawns the detached ECM-R startup thread on process attach.
 BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
 	switch (dwReason)

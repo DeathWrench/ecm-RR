@@ -5,14 +5,17 @@
 #include "defs.hpp"
 #include "global.hpp"
 
+/// Wraps direct game hooks, patches, and chyron helpers used by ECM-R.
 class hook
 {
 public:
+	/// Returns whether a frontend or in-game FNG package is currently loaded.
 	static bool IsPackageLoaded(const char* package)
 	{
 		return package != nullptr && ((bool(*)(char*))0x0052CF60)(const_cast<char*>(package));
 	}
 
+	/// Returns whether frontend UI packages are ready to show the song chyron.
 	static bool IsFrontendChyronReady()
 	{
 		return IsPackageLoaded("UI_PC_Help_Bar.fng") ||
@@ -20,6 +23,7 @@ public:
 			IsPackageLoaded("Chyron_FE.fng");
 	}
 
+	/// Shows the current song banner when the active game state allows it.
 	static bool SummonChyron(const char* title, const char* artist, const char* album)
 	{
 		switch (global::game)
@@ -46,6 +50,7 @@ public:
 		return false;
 	}
 
+	/// Fully removes the frontend and in-game chyron packages when music is paused.
 	static void HideChyron()
 	{
 		switch (global::game)
@@ -68,12 +73,14 @@ public:
 		}
 	}
 
+	/// Writes a relative JMP patch at the target address.
 	template <typename T> static void jump(std::uint32_t address, T function)
 	{
 		*(std::uint8_t*)(address) = 0xE9;
 		*(std::uint32_t*)(address + 1) = (std::uint32_t(function) - address - 5);
 	};
 
+	/// Patches a function to return a constant value immediately.
 	template <typename T> static void retn_value(std::uint32_t address, T value)
 	{
 		*(std::uint8_t*)(address) = 0xB8;
@@ -81,6 +88,7 @@ public:
 		*(std::uint8_t*)(address + 5) = 0xC3;
 	}
 
+	/// Patches a function to return immediately.
 	static void retn(std::uint32_t address)
 	{
 		*(std::uint8_t*)(address) = 0xC3;
