@@ -21,6 +21,7 @@ namespace
 {
 	using hotkey_action = input::hotkey_action;
 
+	// Tracks an in-progress hotkey rebind and the feedback shown by the overlay.
 	struct hotkey_capture_state_t
 	{
 		bool active = false;
@@ -32,6 +33,7 @@ namespace
 
 	hotkey_capture_state_t hotkey_capture_state;
 
+	// Finds the static binding descriptor for a hotkey action.
 	const input::hotkey_binding* find_hotkey_binding(const hotkey_action action)
 	{
 		for (const auto& binding : input::hotkey_bindings())
@@ -45,6 +47,7 @@ namespace
 		return nullptr;
 	}
 
+	// Returns the one-shot latch used to debounce a specific hotkey action.
 	bool* latch_for_action(const hotkey_action action)
 	{
 		switch (action)
@@ -72,11 +75,13 @@ namespace
 		}
 	}
 
+	// Mirrors the audio subsystem lock that suppresses playback hotkeys during unsafe states.
 	bool hotkeys_locked()
 	{
 		return audio::are_hotkeys_locked();
 	}
 
+	// Clears the transient capture result shown after a rebind attempt.
 	void clear_capture_feedback_state()
 	{
 		hotkey_capture_state.feedback_action = hotkey_action::count;
@@ -84,6 +89,7 @@ namespace
 		hotkey_capture_state.is_error = false;
 	}
 
+	// Stores the latest success or failure message for the active hotkey action.
 	void set_capture_feedback(const hotkey_action action, const std::string& message, const bool is_error)
 	{
 		hotkey_capture_state.feedback_action = action;
@@ -91,6 +97,7 @@ namespace
 		hotkey_capture_state.is_error = is_error;
 	}
 
+	// Refreshes every hotkey latch from the current keyboard state to avoid stale presses.
 	void sync_hotkey_latches()
 	{
 		for (const auto& binding : input::hotkey_bindings())
@@ -106,31 +113,37 @@ namespace
 		}
 	}
 
+	// Small wrapper used by the hotkey dispatcher for next-track navigation.
 	void skip_to_next_track()
 	{
 		audio::skip_to_next_track();
 	}
 
+	// Small wrapper used by the hotkey dispatcher for previous-track navigation.
 	void skip_to_previous_track()
 	{
 		audio::play_previous_song();
 	}
 
+	// Small wrapper used by the hotkey dispatcher for manual pause toggling.
 	void toggle_manual_pause()
 	{
 		audio::toggle_manual_pause();
 	}
 
+	// Small wrapper used by the hotkey dispatcher for shuffle toggling.
 	void toggle_shuffle_enabled()
 	{
 		audio::toggle_shuffle_enabled();
 	}
 
+	// Small wrapper used by the hotkey dispatcher for repeat toggling.
 	void toggle_repeat_enabled()
 	{
 		audio::toggle_repeat_enabled();
 	}
 
+	// Executes the runtime action associated with a hotkey binding.
 	void execute_hotkey_action(const hotkey_action action)
 	{
 		switch (action)
@@ -164,6 +177,7 @@ namespace
 		}
 	}
 
+	// Matches a pressed key against the configured bindings and debounces repeated triggers.
 	bool dispatch_hotkey(const std::uint32_t key)
 	{
 		if (key == input::unbound_key)
@@ -196,6 +210,7 @@ namespace
 		return false;
 	}
 
+	// Releases the latch for a hotkey once its key is no longer pressed.
 	void release_hotkey(const std::uint32_t key)
 	{
 		if (key == input::unbound_key)
@@ -219,6 +234,7 @@ namespace
 		}
 	}
 
+	// Applies a captured key to the active rebind request and persists it when possible.
 	bool try_capture_hotkey(const std::uint32_t key)
 	{
 		if (!hotkey_capture_state.active)
@@ -259,6 +275,7 @@ namespace
 	}
 }
 
+// Returns the canonical binding table used by input, menus, and settings.
 const std::array<input::hotkey_binding, input::hotkey_count>& input::hotkey_bindings()
 {
 	static const std::array<input::hotkey_binding, input::hotkey_count> bindings = {{
@@ -273,6 +290,7 @@ const std::array<input::hotkey_binding, input::hotkey_count>& input::hotkey_bind
 	return bindings;
 }
 
+// Parses a persisted key name into the corresponding virtual-key code.
 std::uint32_t input::key_from_string(const char* key_text, std::uint32_t default_key)
 {
 	if (!key_text || !key_text[0])
@@ -331,6 +349,7 @@ std::uint32_t input::key_from_string(const char* key_text, std::uint32_t default
 	return default_key;
 }
 
+// Converts a runtime virtual-key code into the display and INI text representation.
 std::string input::key_to_string(const std::uint32_t key)
 {
 	if (key == input::unbound_key)
@@ -400,6 +419,7 @@ std::string input::key_to_string(const std::uint32_t key)
 	}
 }
 
+// Validates whether a virtual-key code is supported by ECM-R hotkey rebinding.
 bool input::is_supported_key(const std::uint32_t key)
 {
 	if (key >= VK_F1 && key <= VK_F24)
@@ -436,11 +456,13 @@ bool input::is_supported_key(const std::uint32_t key)
 	}
 }
 
+// Returns the supported-key list shown in the hotkeys menu and error messages.
 const char* input::supported_key_help()
 {
 	return "F1-F24, A-Z, 0-9, Space, Tab, Enter, Esc, Backspace, Insert, Delete, Home, End, PageUp, PageDown, Up, Down, Left, Right";
 }
 
+// Assigns a hotkey after validating support and checking for duplicate bindings.
 bool input::assign_hotkey(const input::hotkey_action action, const std::uint32_t key, std::string* error_message)
 {
 	if (error_message)
@@ -501,6 +523,7 @@ bool input::assign_hotkey(const input::hotkey_action action, const std::uint32_t
 	return true;
 }
 
+// Restores one action to its default configured hotkey.
 void input::reset_hotkey(const input::hotkey_action action)
 {
 	if (const hotkey_binding* binding = find_hotkey_binding(action))
@@ -509,6 +532,7 @@ void input::reset_hotkey(const input::hotkey_action action)
 	}
 }
 
+// Restores every action to its default key without touching persistence.
 void input::reset_all_hotkeys()
 {
 	for (const auto& binding : input::hotkey_bindings())
@@ -519,6 +543,7 @@ void input::reset_all_hotkeys()
 	sync_hotkey_latches();
 }
 
+// Starts capturing the next pressed key for a specific action.
 bool input::begin_hotkey_capture(const input::hotkey_action action)
 {
 	if (!find_hotkey_binding(action))
@@ -533,6 +558,7 @@ bool input::begin_hotkey_capture(const input::hotkey_action action)
 	return true;
 }
 
+// Cancels the active capture and reports that it was intentionally aborted.
 void input::cancel_hotkey_capture()
 {
 	if (!hotkey_capture_state.active)
@@ -547,36 +573,43 @@ void input::cancel_hotkey_capture()
 	sync_hotkey_latches();
 }
 
+// Reports whether the input system is currently waiting for a replacement key.
 bool input::is_hotkey_capture_active()
 {
 	return hotkey_capture_state.active;
 }
 
+// Returns the action currently being rebound, if any.
 input::hotkey_action input::captured_hotkey_action()
 {
 	return hotkey_capture_state.active ? hotkey_capture_state.action : hotkey_action::count;
 }
 
+// Returns which action owns the latest capture feedback message.
 input::hotkey_action input::capture_feedback_action()
 {
 	return hotkey_capture_state.feedback_action;
 }
 
+// Returns the latest hotkey capture feedback message.
 const char* input::capture_feedback_message()
 {
 	return hotkey_capture_state.message.c_str();
 }
 
+// Tells the overlay whether the latest capture feedback is an error or a success.
 bool input::capture_feedback_is_error()
 {
 	return hotkey_capture_state.is_error;
 }
 
+// Clears any capture feedback that is still visible in the overlay.
 void input::clear_capture_feedback()
 {
 	clear_capture_feedback_state();
 }
 
+// Window procedure hook that forwards keyboard input to ImGui and ECM-R callbacks.
 LRESULT __stdcall wndproc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
@@ -619,6 +652,7 @@ LRESULT __stdcall wndproc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	return CallWindowProcA(o_wndproc, hWnd, uMsg, wParam, lParam);
 }
 
+// Installs the window hook and registers the key down and key up handlers used by ECM-R.
 void input::init_overlay()
 {
 	o_wndproc = (WNDPROC)SetWindowLongW(global::hwnd, GWLP_WNDPROC, (LONG_PTR)wndproc);
@@ -650,6 +684,7 @@ void input::init_overlay()
 }
 
 
+// Polls update-driven hotkeys and keeps their latches in sync across frames.
 void input::update()
 {
 	if (hotkeys_locked() || input::is_hotkey_capture_active())
@@ -692,11 +727,13 @@ void input::update()
 }
 
 
+// Registers a callback for one of the low-level keyboard event channels.
 void input::on(input::callback_type type, input::callback callback)
 {
 	input::callbacks_[type].emplace_back(callback);
 }
 
+// Queries whether an ImGui key was pressed during the current frame.
 bool input::is_key_down(std::uint32_t key)
 {
 	return ImGui::IsKeyPressed(key, false);

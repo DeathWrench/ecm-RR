@@ -48,6 +48,7 @@ namespace
 	std::mutex version_mutex;
 	std::future<void> version_check_task;
 
+	// Small subset of release metadata extracted from the GitHub releases API.
 	struct github_release_info
 	{
 		std::string tag_name;
@@ -57,6 +58,7 @@ namespace
 
 	github_release_info latest_release_info;
 
+	// Parsed semantic-ish version used for update comparisons.
 	struct parsed_version
 	{
 		std::array<int, 3> numbers{ 0, 0, 0 };
@@ -74,6 +76,7 @@ namespace
 	using winhttp_set_timeouts_fn = BOOL(WINAPI*)(HINTERNET, int, int, int, int);
 	using winhttp_close_handle_fn = BOOL(WINAPI*)(HINTERNET);
 
+	// Splits a version string into numeric parts and an optional prerelease suffix.
 	parsed_version parse_version_string(std::string version)
 	{
 		version.erase(version.begin(), std::find_if(version.begin(), version.end(), [](const unsigned char ch)
@@ -130,6 +133,7 @@ namespace
 		return result;
 	}
 
+	// Compares two ECM-R version strings for release-update detection.
 	int compare_versions(const std::string& lhs, const std::string& rhs)
 	{
 		const parsed_version left = parse_version_string(lhs);
@@ -171,6 +175,7 @@ namespace
 		return left.prerelease < right.prerelease ? -1 : 1;
 	}
 
+	// Extracts a JSON string field using a minimal parser tailored to the GitHub response.
 	bool try_extract_json_string_field(const std::string& source, const char* key, std::string& value)
 	{
 		const std::size_t key_pos = source.find(key);
@@ -219,6 +224,7 @@ namespace
 		return false;
 	}
 
+	// Extracts a JSON boolean field using a minimal parser tailored to the GitHub response.
 	bool try_extract_json_bool_field(const std::string& source, const char* key, bool& value)
 	{
 		const std::size_t key_pos = source.find(key);
@@ -254,6 +260,7 @@ namespace
 		return false;
 	}
 
+	// Parses the GitHub releases payload into the subset of fields ECM-R cares about.
 	std::vector<github_release_info> parse_release_list(const std::string& response_body)
 	{
 		std::vector<github_release_info> releases;
@@ -282,6 +289,7 @@ namespace
 		return releases;
 	}
 
+	// Filters releases according to the configured update-discovery policy.
 	bool release_matches_discovery_policy(const github_release_info& release)
 	{
 		switch (kReleaseDiscoveryPolicy)
@@ -299,6 +307,7 @@ namespace
 		return false;
 	}
 
+	// Selects the newest release that should be considered for update checks.
 	github_release_info extract_latest_release_info(const std::string& response_body)
 	{
 		for (const github_release_info& release : parse_release_list(response_body))
@@ -312,16 +321,19 @@ namespace
 		return {};
 	}
 
+	// Returns the menu label shown when a newer release has been found.
 	const char* version_update_label(const github_release_info& release)
 	{
 		return release.prerelease ? kTestingVersionUpdateLabel : kStableVersionUpdateLabel;
 	}
 
+	// Returns the tooltip label that describes the discovered release channel.
 	const char* latest_release_tooltip_label(const github_release_info& release)
 	{
 		return release.prerelease ? "Latest testing pre-release" : "Latest stable release";
 	}
 
+	// Fetches the GitHub release list through WinHTTP loaded at runtime.
 	std::string fetch_release_list_response()
 	{
 		HMODULE winhttp_module = LoadLibraryW(L"winhttp.dll");
@@ -408,6 +420,7 @@ namespace
 		return response_body;
 	}
 
+	// Starts the asynchronous version check once per process lifetime.
 	void run_version_check_once()
 	{
 		version_status.store(version_check_state::checking, std::memory_order_release);
@@ -439,6 +452,7 @@ namespace
 		});
 	}
 
+	// Waits for the async version check only after it has already completed or failed.
 	void finalize_version_check_task()
 	{
 		if (!version_check_task.valid())
@@ -454,17 +468,20 @@ namespace
 		version_check_task.wait();
 	}
 
+	// Reports whether the async update check found a newer release than the current build.
 	bool has_newer_release_available()
 	{
 		return version_status.load(std::memory_order_acquire) == version_check_state::update_available;
 	}
 
+	// Returns a thread-safe snapshot of the latest discovered release metadata.
 	github_release_info current_latest_release_info()
 	{
 		std::scoped_lock lock(version_mutex);
 		return latest_release_info;
 	}
 
+	// Draws the update badge shown in the main menu bar when a new release is available.
 	void draw_new_version_badge(const github_release_info& release)
 	{
 		const ImVec4 update_color(0.92f, 0.25f, 0.25f, 1.0f);
@@ -478,6 +495,7 @@ namespace
 		}
 	}
 
+	// Clears menu-local hotkey feedback created by button-based actions.
 	void clear_hotkey_menu_feedback()
 	{
 		hotkey_menu_feedback_action = input::hotkey_action::count;
@@ -485,6 +503,7 @@ namespace
 		hotkey_menu_feedback_is_error = false;
 	}
 
+	// Stores menu-local hotkey feedback after a save, reset, or clear action.
 	void set_hotkey_menu_feedback(const input::hotkey_action action, const std::string& message, const bool is_error)
 	{
 		hotkey_menu_feedback_action = action;
@@ -492,6 +511,7 @@ namespace
 		hotkey_menu_feedback_is_error = is_error;
 	}
 
+	// Applies a hotkey change and rolls it back if the INI file cannot be updated.
 	bool apply_hotkey_change(const input::hotkey_binding& binding, const std::uint32_t key, std::string& error_message)
 	{
 		const std::uint32_t previous_key = *binding.runtime_key;
@@ -510,6 +530,7 @@ namespace
 		return true;
 	}
 
+	// Resets every hotkey and restores the previous state if persistence fails.
 	bool reset_all_hotkeys_with_persistence(std::string& error_message)
 	{
 		std::array<std::uint32_t, input::hotkey_count> previous_keys{};
@@ -535,6 +556,7 @@ namespace
 		return false;
 	}
 
+	// Resolves the display label for a hotkey action shown in the menu.
 	const char* hotkey_label_for_action(const input::hotkey_action action)
 	{
 		for (const auto& binding : input::hotkey_bindings())
@@ -548,6 +570,7 @@ namespace
 		return nullptr;
 	}
 
+	// Opens an external URL and reports a failure if Windows cannot launch it.
 	void open_external_link(const char* url)
 	{
 		const auto result = reinterpret_cast<INT_PTR>(ShellExecuteA(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL));
@@ -558,6 +581,7 @@ namespace
 	}
 }
 
+// Creates the ImGui context, loads fonts, and kicks off the release check.
 void menus::init()
 {
 	IMGUI_CHECKVERSION();
@@ -569,6 +593,7 @@ void menus::init()
 	std::call_once(version_check_once, run_version_check_once);
 }
 
+// Starts a new ImGui frame using the backend that matches the active renderer.
 void menus::prepare()
 {
 	switch (global::renderer)
@@ -594,6 +619,7 @@ void menus::prepare()
 	ImGui::NewFrame();
 }
 
+// Finalizes and submits the current ImGui frame through the active renderer backend.
 void menus::present()
 {
 	ImGui::EndFrame();
@@ -619,6 +645,7 @@ void menus::present()
 	}
 }
 
+// Updates overlay visibility and draws the top-level ECM-R menu bar when shown.
 void menus::update()
 {
 	finalize_version_check_task();
@@ -637,6 +664,7 @@ void menus::update()
 	}
 }
 
+// Renders the main menu bar with playback status, update badge, and submenus.
 void menus::main_menu_bar()
 {
 	if (ImGui::BeginMainMenuBar())
@@ -674,6 +702,7 @@ void menus::main_menu_bar()
 	}
 }
 
+// Renders playback controls, context-aware volume sliders, and runtime status.
 void menus::actions()
 {
 	if (ImGui::BeginMenu("Actions"))
@@ -753,6 +782,7 @@ void menus::actions()
 	}
 }
 
+// Renders hotkey rebinding controls together with capture and persistence feedback.
 void menus::hotkeys()
 {
 	if (!ImGui::BeginMenu("Hotkeys"))
@@ -903,6 +933,7 @@ void menus::hotkeys()
 	ImGui::EndMenu();
 }
 
+// Renders project credits, version information, and GitHub entry points.
 void menus::about()
 {
   ImGui::SetNextWindowSizeConstraints(ImVec2(220.0f, 0.0f), ImVec2(360.0f, FLT_MAX));
@@ -935,6 +966,7 @@ void menus::about()
 	}
 }
 
+// Renders the discovered playlist as a simple track list.
 void menus::playlist()
 {
 	if (ImGui::BeginMenu("Playlist"))
@@ -950,6 +982,7 @@ void menus::playlist()
 	}
 }
 
+// Loads the main UI font and merges optional emoji and Japanese glyph ranges.
 void menus::build_font(ImGuiIO& io)
 {
 	std::string font = "ecm/fonts/NotoSans-Regular.ttf";
