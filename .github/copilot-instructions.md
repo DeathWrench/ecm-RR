@@ -5,6 +5,7 @@
 - Project documentation and written project content should be in English.
 - Repository instruction files should be written in English.
 - User-facing documentation, release notes, and changelog entries should be written in English.
+- Read `docs/application-context.md` before non-trivial ECM-R analysis, implementation, or validation work. Treat it as the repository-level context and behavior guide, then confirm details against code.
 - Treat the Copilot agent for this repository as a specialist for analysis, code generation, and validation of ECM-R changes, with special attention to game-state transitions, audio integration, hook safety, configuration persistence, and regression validation.
 - Keep fork attribution to the original ECM project and its original author, BttrDrgn.
 - Do not remove or rewrite the original license attribution.
@@ -34,7 +35,7 @@
 - Keep compatibility-sensitive runtime names, configuration keys, and deployment expectations stable unless the task explicitly changes them.
 
 ### Documentation Tasks
-- Treat `README.md`, `BUILDING.md`, `CHANGELOG.md`, and `docs/releases/*.md` as the main maintained documentation set for this fork.
+- Treat `README.md`, `BUILDING.md`, `CONFIGURATION.MD`, `docs/application-context.md`, `CHANGELOG.md`, and `docs/releases/*.md` as the main maintained documentation set for this fork.
 - When documenting code changes, keep configuration names, runtime filenames, deployment paths, and BASS runtime requirements exactly aligned with the current implementation.
 - For release notes and changelog entries, document only the changes introduced by the target release and avoid mixing roadmap items, older features, or unmerged work. Ensure changelog entries are aligned with the published GitHub release notes and follow the existing changelog section pattern.
 - Prefer updating the smallest relevant documentation surface instead of rewriting multiple documents unnecessarily, but keep cross-file consistency when one change affects setup, runtime behavior, or release messaging.
