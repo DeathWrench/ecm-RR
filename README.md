@@ -12,14 +12,15 @@ This fork is currently focused on **Need for Speed: Underground 2 (NFSU2)**.
 
 ## Quick Start
 
-1. Install ECM-R with your preferred mod loader or mod manager.
-2. Download the official `bass.dll` runtime from https://www.un4seen.com/.
-3. Place `ecm-r.x86.asi`, `ecm-r.x86.ini` (or let ECM-R create it), and `bass.dll` inside the target `scripts` folder.
-4. Create a `Music` folder next to those runtime files.
-5. Put your supported audio files inside `Music`.
-6. Launch the game, wait for the first startup music banner to finish, and then open the overlay with `F11`.
+1. Download the official `bass.dll` runtime from https://www.un4seen.com/.
+2. Extract ECM-R runtime files into the game's `scripts` folder:
+   - `ecm-r.x86.asi`
+   - `ecm-r.x86.ini` (ECM-R creates it automatically on first launch)
+   - `bass.dll`
+3. Create a `Music` folder next to those runtime files and place your supported audio files inside.
+4. Launch the game, wait for the first startup music banner to finish, and then open the overlay with `F11`.
 
-ECM-R supports `frontend_volume` and `ingame_volume` in addition to the legacy `volume` setting. Older configurations keep using `volume` as the fallback base when the context-specific values are missing.
+ECM-R supports separate `frontend_volume` and `ingame_volume` settings. Legacy `volume` configurations automatically use it as fallback when context-specific values are missing.
 
 ## Quick Links
 
@@ -29,10 +30,9 @@ ECM-R supports `frontend_volume` and `ingame_volume` in addition to the legacy `
 
 ## Fork Status
 
-This repository is maintained as a fork of the original ECM project by **BttrDrgn**.
-The current feature set and documentation are maintained around the NFSU2 runtime used by this fork.
+This repository is maintained as a fork of the original ECM project by **BttrDrgn**. The current feature set and documentation are maintained around the NFSU2 runtime used by this fork.
 
-If you are looking for the original ECM source, attribution chain, or upstream history, review the upstream repository and the included license file.
+For the original ECM source, attribution chain, or upstream history, review the upstream repository and the included license file.
 
 ## Credits and Support
 
@@ -73,30 +73,18 @@ ECM-R loads the official BASS runtime dynamically, so `bass.dll` must be present
 
 ## Installation
 
-Before choosing an installation method:
+Before installing, ensure you have:
 
-1. Download the official `bass.dll` runtime from https://www.un4seen.com/
-2. Prepare the ECM-R runtime files for your target `scripts` folder:
+1. Downloaded the official `bass.dll` runtime from https://www.un4seen.com/
+2. Obtained the ECM-R runtime files:
    - `ecm-r.x86.asi`
-   - `ecm-r.x86.ini` (optional on first launch)
+   - `ecm-r.x86.ini` (created automatically on first launch if missing)
    - `bass.dll`
-3. Create a `Music` folder next to those files and place your songs inside it.
+3. Created a `Music` folder in the target location with your supported audio files
 
-### Option 1: Mr. Modman
+### Installation Methods
 
-If you use [Mr. Modman](https://github.com/VelocityCL/mr.modman):
-
-1. Extract the release `scripts` contents into your game's global directory or pack directory.
-2. Make sure the final deployed `scripts` folder contains `ecm-r.x86.asi`, `ecm-r.x86.ini` (or allow it to be created), and `bass.dll`.
-3. Make sure the `Music` folder is placed in that same runtime location.
-
-### Option 2: ASI Loader
-
-If your game already uses an ASI loader such as `dinput8.dll`:
-
-1. Extract the release files into the game directory used by your loader.
-2. Make sure the loader's `scripts` folder contains `ecm-r.x86.asi`, `ecm-r.x86.ini` (or allow it to be created), and `bass.dll`.
-3. Create a `Music` folder in that same runtime location and place your songs there.
+**Mr. Modman** or **ASI Loader**: Extract the release `scripts` contents into your game's directory. Ensure the final deployed `scripts` folder contains `ecm-r.x86.asi`, `bass.dll`, and your `Music` folder. ECM-R will create `ecm-r.x86.ini` automatically if it's missing.
 
 ## Supported Audio Formats
 
@@ -165,16 +153,11 @@ The current roadmap includes:
 
 ## Notes
 
-- If `bass.dll` is missing or the wrong version is loaded, audio playback will fail.
-- If `bass.dll` cannot be loaded, ECM-R shows the Windows error text and the exact path it tried in the startup popup.
+- `bass.dll` must be the official BASS runtime placed next to the ECM-R runtime files. The current runtime integration has been tested with BASS `v2.4.18.11`. Avoid unofficial, modified, or repackaged builds.
+- If `bass.dll` is missing, incorrect version, or cannot be loaded, audio playback will fail. ECM-R shows Windows error text and the exact path it tried in the startup popup.
+- BASS is a third-party library subject to the official BASS license terms. ECM-R does not bundle or redistribute `bass.dll`; users must obtain the official runtime themselves.
+- If your usage becomes commercial, review the official BASS licensing terms and obtain any required license before distribution. ECM-R is maintained as a non-commercial fork project.
 - ECM-R ignores its hotkeys during the first startup chyron so the initial banner can complete cleanly before manual controls are used.
-- `bass.dll` must be the official BASS runtime placed next to the ECM-R runtime files.
-- The current runtime integration has been tested with BASS `v2.4.18.11`.
-- Avoid using unofficial, modified, or repackaged `bass.dll` builds.
-- BASS is a third-party library and remains subject to the official BASS license terms.
-- ECM-R does not bundle or redistribute `bass.dll`; users must obtain the official runtime themselves.
-- ECM-R is maintained as a non-commercial fork project.
-- If your usage of ECM-R or BASS becomes commercial, review the official BASS licensing terms and obtain any required licence before distribution.
 - The mod writes a crash dump file on unhandled exceptions.
 - This repository includes third-party dependencies and keeps the original MIT license notice.
 - The fork branding is ECM-R, and the runtime filenames follow the `ecm-r.*` naming scheme.
