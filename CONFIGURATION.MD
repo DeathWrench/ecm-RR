@@ -2,11 +2,11 @@
 
 ## Overview
 
-ECM-R creates `ecm-r.x86.ini` automatically on first launch.
+ECM-R automatically creates `ecm-r.x86.ini` next to the plugin DLL on its first launch. 
 
-The current maintained runtime for this fork is `ecm-r.x86.asi`, and the configuration file is expected to live next to it as `ecm-r.x86.ini`.
+The active runtime is `ecm-r.x86.asi`, and the configuration file must reside in the same directory as `ecm-r.x86.ini`.
 
-Default configuration:
+### Default Configuration Structure
 
 ```ini
 [core]
@@ -38,16 +38,16 @@ song2.mp3 = FE
 song3.mp3 = IG
 ```
 
+---
+
 ## `[core]` Settings
 
 ### `playlist`
+- **Description:** Name of the folder where the custom music library is stored.
+- **Default:** `Music`
+- **Behavior:** ECM-R scans this directory relative to the plugin's location.
 
-- Defines the folder name used as the music library.
-- Default value: `Music`.
-- ECM-R looks for this folder relative to the mod location.
-
-Expected runtime layout:
-
+**Expected Runtime Layout:**
 ```text
 Game Folder/
   scripts/
@@ -60,144 +60,110 @@ Game Folder/
 ```
 
 ### `volume`
-
-- Legacy fallback volume used when a specific context volume is unavailable.
-- Range: `0` to `100`.
-- Default value: `100`.
+- **Description:** Legacy/fallback volume setting.
+- **Default:** `100`
+- **Range:** `0` to `100`
+- **Behavior:** Acts as a global reference and fallback value. If dedicated frontend or in-game volume settings are missing, they automatically inherit this value.
 
 ### `frontend_volume`
-
-- Volume used while ECM-R is playing in frontend or menu contexts.
-- Range: `0` to `100`.
-- Default value: `100`.
-- Existing configurations inherit the value from `volume` when this setting is missing.
+- **Description:** Playback volume applied when navigating the Main Menu or safehouse menus (Frontend).
+- **Default:** `100`
+- **Range:** `0` to `100`
+- **Behavior:** Reconciled immediately during context transitions. If not present in the INI, it inherits the value of `volume`.
 
 ### `ingame_volume`
-
-- Volume used while ECM-R is playing during in-game or racing contexts.
-- Range: `0` to `100`.
-- Default value: `100`.
-- Existing configurations inherit the value from `volume` when this setting is missing.
+- **Description:** Playback volume applied while racing or exploring the open world (In-Game).
+- **Default:** `100`
+- **Range:** `0` to `100`
+- **Behavior:** Reconciled immediately during context transitions. If not present in the INI, it inherits the value of `volume`.
 
 ### `version`
+- **Description:** Tracks the internal mod version.
+- **Behavior:** Updated automatically by the mod at startup to coordinate migrations.
 
-- Internal version marker managed by ECM-R.
-- This value is updated automatically by the mod.
+---
 
 ## `[config]` Settings
 
 ### `shuffle_enabled`
-
-- Controls whether valid tracks are shuffled before playback.
-- Default value: `true`.
-- When set to `false`, ECM-R plays valid tracks in discovered order.
+- **Description:** Randomizes song playback.
+- **Default:** `true`
+- **Behavior:** Uses a bounded playback history (up to 50 tracks) to prevent repeating recently played tracks and to support navigating backward (`previous_track`) and forward (`skip_track`) reliably while shuffling.
 
 ### `repeat_enabled`
-
-- Controls whether playback restarts from the beginning of the valid track list after the last song finishes.
-- Default value: `true`.
-- When set to `false`, playback stops after the last valid track in the current context.
+- **Description:** Loops playback.
+- **Default:** `true`
+- **Behavior:** Controls whether playback returns to the start of the playlist queue once all valid tracks for the current game context have finished.
 
 ### `stop_music_on_loading_screens`
+- **Description:** Suspends music during load screens.
+- **Default:** `true`
+- **Behavior:** Halts the active track on loading screens. If set to `false`, music plays uninterrupted across screens.
 
-- Controls whether ECM-R stops the current song during loading screens.
-- Default value: `true`.
-- When set to `false`, custom music continues through loading screens.
+---
 
 ## `[experimental]` Settings
 
 ### `ingame_movie_muting`
+- **Description:** Resolves audio conflicts during comic or story movie sequences.
+- **Default:** `false`
+- **Behavior:** When set to `true`, the game treats `IG_PlayMovie.fng` as a mute trigger. The plugin reconciles the active pause state dynamically against loaded interface packages. This prevents background music from clashing with comic voice-overs and ensures playback resumes only after the movie finishes.
 
-- Controls an experimental mute path for comic-style in-game movie sequences.
-- Default value: `false`.
-- When set to `true`, ECM-R also treats `IG_PlayMovie.fng` as a mute-trigger package.
-- This experimental mode also switches the package hook to reconcile pause state against the currently loaded mute packages, which avoids resuming too early while the movie package is still active.
-- When left at `false`, ECM-R keeps the legacy package-hook behavior.
+### Accepted Boolean Formats
+All `[config]` and `[experimental]` boolean parameters accept:
+- **True values:** `true`, `1`, `yes`, `on`
+- **False values:** `false`, `0`, `no`, `off`
 
-### Accepted boolean values
-
-The `[config]` and `[experimental]` sections accept these values:
-
-- `true`
-- `false`
-- `1`
-- `0`
-- `yes`
-- `no`
-- `on`
-- `off`
+---
 
 ## `[keys]` Settings
 
-- ECM-R hotkeys remain locked during the first startup music banner and unlock automatically after that first chyron has been shown and dismissed once.
-- The overlay `Hotkeys` menu applies and saves runtime binding changes immediately.
-- Use `None` or `Unbound` to leave a binding disabled.
+### Hotkey Rules
+- **Startup Lock:** Keybindings are temporarily locked during the initial startup music banner (first chyron) and unlock automatically after the banner is dismissed.
+- **Duplicate Protection:** The in-game UI rejects duplicate key assignments. If duplicates are forced manually via the INI, the mod automatically restores conflicting bindings to their defaults at load time.
+- **Disabling Keys:** Assign a key to `None` or `Unbound` to disable it.
 
-### `toggle_overlay`
+### Parameters
+| Setting Name | Default Value | Description |
+|---|---|---|
+| `toggle_overlay` | `F11` | Shows/hides the ImGui menu overlay. (Cannot be unbound via UI to prevent losing access). |
+| `pause_track` | `F8` | Manually pauses/resumes music. Preserved until manually unpaused or context becomes invalid. |
+| `previous_track` | `F9` | Navigates to the prior track (navigates history when shuffled). |
+| `skip_track` | `F10` | Skips to the next track in the queue. |
+| `toggle_shuffle` | `None` | Toggles shuffle mode at runtime and rebuilds the playlist order. |
+| `toggle_repeat` | `None` | Toggles playlist repeat mode at runtime. |
 
-- Key used to show or hide the in-game overlay.
-- Default value: `F11`.
-- The overlay UI does not offer a `Clear` button for this action, so you do not accidentally strand yourself without a way to reopen the menu.
+### Supported Key Names
+The following virtual-key mappings are recognized:
+- **Function Keys:** `F1` through `F24`
+- **Alphanumeric:** `A` to `Z`, `0` to `9`
+- **Navigation & Editing:** `Space`, `Tab`, `Enter`, `Esc`, `Escape`, `Backspace`, `Insert`, `Delete`, `Home`, `End`, `PageUp`, `PageDown`
+- **Arrows:** `Up`, `Down`, `Left`, `Right`
+- **None State:** `None`, `Unbound`
 
-### `previous_track`
-
-- Key used to go back to the previous song.
-- Default value: `F9`.
-
-### `pause_track`
-
-- Key used to pause or resume ECM-R playback manually.
-- Default value: `F8`.
-- While pause is active, ECM-R keeps the pause state until the user resumes playback.
-- If the game context changes while paused, ECM-R resumes the same track only if it is still valid for the new context. Otherwise, it continues with the next valid track for the current context.
-
-### `skip_track`
-
-- Key used to jump to the next song.
-- Default value: `F10`.
-
-### `toggle_shuffle`
-
-- Key used to toggle shuffle mode from the keyboard.
-- Default value: `None`.
-- When enabled from the keyboard, ECM-R uses the same runtime behavior as the overlay checkbox: it updates `shuffle_enabled`, rebuilds the playlist order, and resets the current playlist index.
-
-### `toggle_repeat`
-
-- Key used to toggle repeat mode from the keyboard.
-- Default value: `None`.
-- This action uses the same runtime behavior as the overlay checkbox and persists the updated repeat state immediately.
-
-### Supported key values
-
-ECM-R accepts:
-
-- Function keys such as `F1` to `F24`
-- Letters such as `A` to `Z`
-- Digits such as `0` to `9`
-- Named keys such as `Space`, `Tab`, `Enter`, `Esc`, `Escape`, `Backspace`, `Insert`, `Delete`, `Home`, `End`, `PageUp`, `PageDown`, `Up`, `Down`, `Left`, and `Right`
-- `None` or `Unbound` for an explicit disabled state
-
-If a key value is invalid or duplicates another ECM-R action, ECM-R restores that action to its built-in default on the next load. Duplicate assignments are rejected directly in the overlay.
+---
 
 ## `[trax]` Settings
 
-Each discovered song is added under `[trax]`.
+Every scanned track is registered under `[trax]`. Track routing **must be configured manually** by editing `ecm-r.x86.ini`, as the in-game overlay playlist menu is read-only.
 
-Allowed values:
+### Routing Contexts
+- `ALL`: Play everywhere.
+- `FE`: Play only in Frontend (main menu, safehouse).
+- `IG`: Play only In-Game (races, free roam).
 
-- `ALL`: Play everywhere
-- `FE`: Frontend only
-- `IG`: In-game only
+*Note: Invalid/unrecognized routing tokens default automatically to `ALL`.*
 
-This makes it possible to separate menu music from racing music.
-Invalid or missing values fall back to `ALL`.
+---
 
 ## Behavior Notes
 
-- Changes made from the overlay to shuffle, repeat, volume, or hotkey settings are saved back to `ecm-r.x86.ini` automatically.
-- Manual pause state is not persisted across game restarts.
-- While the `Hotkeys` menu is waiting for a new binding, ECM-R suspends all ECM-R hotkey actions until the user binds a key or clicks `Cancel`.
-- While manual pause is active, the in-game chyron is hidden and is shown again when playback resumes.
-- If a filename follows the format `Artist - Title.ext`, the overlay chyron uses that information when possible.
-- Supported playlist formats are `.wav`, `.mp1`, `.mp2`, `.mp3`, `.ogg`, and `.aif`.
+1. **Auto-Save:** Modifying shuffle, repeat, volumes, or hotkeys within the ImGui overlay writes updates to `ecm-r.x86.ini` immediately.
+2. **Transient State:** Manual pause state is held in memory and resets when the game is closed.
+3. **Binding Interlock:** While the `Hotkeys` menu is actively waiting for key capture input, all hotkey trigger actions are suspended.
+4. **Context Reconciliation:** 
+   - Frontend context strictly excludes `IG`-assigned tracks.
+   - In-Game context strictly excludes `FE`-assigned tracks.
+   - If game context transitions while manually paused, playback remains paused unless the current track is invalid for the new context (which triggers a skip to the next valid song).
+5. **Supported Audio Containers:** `.wav`, `.mp1`, `.mp2`, `.mp3`, `.ogg`, and `.aif`.
+6. **Title Parsing:** If a file matches `Artist - Title.ext`, the chyron and overlay split this metadata into separate fields automatically.
