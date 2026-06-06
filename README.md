@@ -131,6 +131,7 @@ ECM-R currently scans the playlist folder for these file types:
 - Saves runtime changes for shuffle, repeat, volume, and hotkey settings back to the configuration file
 - Migrates older configurations by using legacy `volume` as the fallback source for context-specific volume settings
 - Supports configurable playlist location, key bindings, loading-screen music handling, and per-track routing rules
+- Automatically adds newly discovered music files to `[trax]` with `ALL` routing and removes orphaned entries for deleted files on each startup
 
 ### Game Integration
 

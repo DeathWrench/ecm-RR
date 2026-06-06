@@ -471,6 +471,8 @@ The settings layer also repairs or migrates older configurations by:
 
 When the settings layer loads an existing INI and discovers music files that are not yet listed in `[trax]`, those tracks are playable in memory (assigned `ALL` routing) and are also automatically written to the INI via `settings::sync_trax_entries()`. This ensures newly added music files persist to the configuration without requiring a version change or a full config rewrite.
 
+The same function also cleans up orphaned `[trax]` entries — keys whose corresponding files no longer exist on disk. This keeps the INI free of stale entries without manual maintenance.
+
 This makes settings work an area where behavior, migration, and persistence must stay aligned.
 
 ## Build and Packaging Context

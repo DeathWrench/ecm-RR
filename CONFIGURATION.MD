@@ -145,7 +145,7 @@ The following virtual-key mappings are recognized:
 
 ## `[trax]` Settings
 
-Every scanned track is registered under `[trax]`. Track routing **must be configured manually** by editing `ecm-r.x86.ini`, as the in-game overlay playlist menu is read-only.
+Every scanned track is registered under `[trax]`. ECM-R automatically adds newly discovered tracks with `ALL` routing and removes orphaned entries when files are deleted from the playlist folder. Track routing **must be configured manually** by editing `ecm-r.x86.ini` if you want to change from `ALL` to `FE` or `IG`, as the in-game overlay playlist menu is read-only.
 
 ### Routing Contexts
 - `ALL`: Play everywhere.
