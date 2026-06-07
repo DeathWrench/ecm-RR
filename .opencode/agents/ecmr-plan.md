@@ -1,7 +1,7 @@
 ---
 description: ECM-R planner. Analyzes, researches, creates plan. Delegates execution to ecmr-dev.
 mode: primary
-color: '#1F9ABF'
+color: '#38F5A6'
 permission:
   edit: deny
   bash: deny
