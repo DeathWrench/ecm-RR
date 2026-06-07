@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "default_agent": "ecmr-dev",
+  "default_agent": "ecmr-plan",
   "instructions": [
     "AGENTS.md",
     "docs/application-context.md"

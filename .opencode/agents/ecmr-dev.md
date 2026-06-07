@@ -1,6 +1,6 @@
 ---
 description: ECM-R developer. NFSU2 music mod. C++17, Premake, ImGui, BASS, MinHook.
-mode: primary
+mode: all
 color: '#1F9ABF'
 ---
 ECM-R dev agent (NFSU2 music mod). C++17/Premake/ImGui/BASS/MinHook.
