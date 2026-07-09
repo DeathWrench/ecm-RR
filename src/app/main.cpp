@@ -128,38 +128,26 @@ void init()
 
 	settings::init();
 
-	if (kiero::init(kiero::RenderType::Auto) == kiero::Status::Success)
+	logger::log_info("Initializing Kiero renderer hook...");
+
+	if (kiero::init(kiero::RenderType::D3D9) == kiero::Status::Success)
 	{
-		switch (kiero::getRenderType())
-		{
-#if KIERO_INCLUDE_D3D9
-		case kiero::RenderType::D3D9:
-			impl::d3d9::init();
-			break;
-#endif
-
-#if KIERO_INCLUDE_D3D10
-		case kiero::RenderType::D3D10:
-			impl::d3d10::init();
-			break;
-#endif
-
-#if KIERO_INCLUDE_D3D11
-		case kiero::RenderType::D3D11:
-			impl::d3d11::init();
-			break;
-#endif
-
-#if KIERO_INCLUDE_OPENGL
-		case kiero::RenderType::OpenGL:
-			impl::opengl3::init();
-			break;
-#endif
-
-		case kiero::RenderType::None:
-			FreeLibraryAndExitThread(global::self, 0);
-			break;
-		}
+		logger::log_info("Kiero D3D9 initialized successfully.");
+		impl::d3d9::init();
+	}
+	else if (kiero::init(kiero::RenderType::D3D10) == kiero::Status::Success)
+	{
+		logger::log_info("Kiero D3D10 initialized successfully.");
+		impl::d3d10::init();
+	}
+	else if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success)
+	{
+		logger::log_info("Kiero D3D11 initialized successfully.");
+		impl::d3d11::init();
+	}
+	else
+	{
+		logger::log_error("Kiero failed to initialize with both D3D9 and D3D11.");
 	}
 
 	MH_EnableHook(MH_ALL_HOOKS);
