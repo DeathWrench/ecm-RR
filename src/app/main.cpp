@@ -145,9 +145,14 @@ void init()
 		logger::log_info("Kiero D3D11 initialized successfully.");
 		impl::d3d11::init();
 	}
+	else if (kiero::init(kiero::RenderType::OpenGL) == kiero::Status::Success)
+	{
+		logger::log_info("Kiero OpenGL initialized successfully.");
+		impl::opengl3::init();
+	}
 	else
 	{
-		logger::log_error("Kiero failed to initialize with both D3D9 and D3D11.");
+		logger::log_error("Kiero failed to initialize.");
 	}
 
 	MH_EnableHook(MH_ALL_HOOKS);
