@@ -815,5 +815,5 @@ std::vector<int> audio::playback_history;
 int audio::current_song_index = 0;
 int audio::playback_history_index = -1;
 std::int32_t audio::playlist_context = -1;
-std::initializer_list<std::string> audio::supported_files { "wav", "mp1", "mp2", "mp3", "ogg", "aif"};
+std::initializer_list<std::string> audio::supported_files { "wav", "mp1", "mp2", "mp3", "ogg", "aif", "flac"};
 std::vector<const char*> audio::mute_detection;
