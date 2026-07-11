@@ -16,7 +16,13 @@ namespace bass_api
     inline constexpr DWORD stream_prescan = 0x20000;
     inline constexpr DWORD config_gvol_stream = 5;
     inline constexpr DWORD bass_unicode = 0x80000000;
-
+	inline constexpr DWORD tag_id3 = 0;
+	inline constexpr DWORD tag_id3v2 = 1;
+	inline constexpr DWORD tag_ogg = 2;
+	inline constexpr DWORD tag_riff_info = 0x100;
+	inline constexpr DWORD tag_flac_metadata = 0x12400;
+	/// Retrieves raw metadata tags from a BASS channel.
+	void* channel_get_tags(DWORD channel, DWORD tags);
     /// Loads bass.dll from the plugin directory and resolves the required exports.
     bool load();
     /// Releases bass.dll and clears the resolved function pointers.

@@ -16,6 +16,7 @@ namespace bass_api
         using set_config_fn = BOOL(WINAPI*)(DWORD, DWORD);
         using stream_create_file_fn = DWORD(WINAPI*)(BOOL, const void*, unsigned long long, unsigned long long, DWORD);
         using channel_play_fn = BOOL(WINAPI*)(DWORD, BOOL);
+		using channel_get_tags_fn = const void* (WINAPI*)(DWORD, DWORD);
 
         HMODULE module_handle = nullptr;
         get_version_fn get_version_ptr = nullptr;
@@ -28,6 +29,7 @@ namespace bass_api
         set_config_fn set_config_ptr = nullptr;
         stream_create_file_fn stream_create_file_ptr = nullptr;
         channel_play_fn channel_play_ptr = nullptr;
+		channel_get_tags_fn channel_get_tags_ptr = nullptr;
         std::string last_error_message;
 
         std::string format_system_error(DWORD error)
@@ -90,6 +92,7 @@ namespace bass_api
             set_config_ptr = nullptr;
             stream_create_file_ptr = nullptr;
             channel_play_ptr = nullptr;
+			channel_get_tags_ptr = nullptr;
         }
 
         template <typename T>
@@ -134,7 +137,8 @@ namespace bass_api
             !resolve(pause_ptr, "BASS_Pause") ||
             !resolve(set_config_ptr, "BASS_SetConfig") ||
             !resolve(stream_create_file_ptr, "BASS_StreamCreateFile") ||
-            !resolve(channel_play_ptr, "BASS_ChannelPlay"))
+            !resolve(channel_play_ptr, "BASS_ChannelPlay") ||
+			!resolve(channel_get_tags_ptr, "BASS_ChannelGetTags"))
         {
             unload();
             return false;
@@ -246,4 +250,15 @@ namespace bass_api
     {
         return channel_play_ptr != nullptr && channel_play_ptr(channel, restart ? TRUE : FALSE) != FALSE;
     }
+
+	/// Retrieves raw metadata tags from a BASS channel.
+	void* channel_get_tags(DWORD channel, DWORD tags)
+	{
+		if (channel_get_tags_ptr == nullptr)
+		{
+			return nullptr;
+		}
+
+		return const_cast<void*>(channel_get_tags_ptr(channel, tags));
+	}
 }
