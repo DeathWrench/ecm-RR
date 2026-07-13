@@ -9,4 +9,4 @@
 	url = https://github.com/TsudaKageyu/minhook
 [submodule "deps/kiero"]
 	path = deps/kiero
-	url = https://github.com/BttrDrgn/kiero
+	url = https://github.com/BasedInc/kiero
